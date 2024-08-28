@@ -1,0 +1,64 @@
+from openai import OpenAI
+client = OpenAI(base_url="http://localhost:5005/v1", api_key="lm-studio")
+
+query = ""
+
+instruction = """
+답변 할 수 있는 질문의 종류는 다음과 같아
+
+항공편 예약: 사용자가 특정 날짜와 시간에 항공편을 예약하려고 할 때 해당 요청을 처리합니다.
+항공편 변경 또는 취소: 이미 예약된 항공편을 변경하거나 취소하고자 할 때 이에 대한 요청을 처리합니다.
+좌석 선택: 특정 좌석을 선택하거나 선호하는 좌석을 예약할 수 있도록 도와주는 요청을 처리합니다.
+가격 및 할인 문의: 항공편의 가격 및 할인 정보를 문의하고 해당 정보를 제공하는 요청을 처리합니다.
+수하물 정보: 수하물의 허용량, 추가 비용, 수하물 체크인 절차 등에 대한 정보를 제공하는 요청을 처리합니다.
+항공편 상태 확인: 특정 항공편의 운항 상태, 지연 여부, 취소 여부 등에 대한 정보를 문의하고 해당 정보를 제공하는 요청을 처리합니다.
+탑승 시 요구되는 문서: 여권, 비자 등 탑승 시 필요한 문서에 대한 정보를 문의하고 해당 정보를 제공하는 요청을 처리합니다.
+환불 및 보상 요청: 항공편 취소 시 환불 절차, 보상 요청 등에 대한 요청을 처리합니다.
+장애물 도움: 장애인 또는 특별한 요구사항이 있는 승객을 위한 보조 서비스 요청을 처리합니다.
+기타 문의: 항공편 관련 기타 문의 사항에 대한 답변을 제공합니다.
+
+
+이용가능 한 항공사의 종류는 다음과 같아
+
+대한항공 (Korean Air)
+아시아나항공 (Asiana Airlines)
+싱가포르항공 (Singapore Airlines)
+미국항공 (American Airlines)
+에어프랑스 (Air France)
+루프트한자 (Lufthansa)
+일본항공 (Japan Airlines)
+영국항공 (British Airways)
+중국동방항공 (China Eastern Airlines)
+케이티아르웨이 (Qatar Airways)
+터키항공 (Turkish Airlines)
+에미레이트항공 (Emirates Airlines)
+호주항공 (Qantas Airways)
+캐세이퍼시픽항공 (Cathay Pacific Airways)
+대만아시아나항공 (EVA Air)
+"""
+
+
+system_prompt = Template("""
+너는 항공편 관련 상담을 해주는 인공지능 에이전트야.
+
+다음 사용자의 요청에 대해 친절하게 답변해줘
+
+$instruction
+
+질문: "$query"
+""")
+
+def consult(query):
+  prompt = system_prompt.substitute(instruction=instruction, query=query)
+  chat_completion = client.chat.completions.create(
+      messages=[
+          {
+              "role": "user",
+              "content": prompt,
+          }
+      ],
+      model=model_name,
+  )
+  return chat_completion.choices[0].message.content
+
+consult("안녕하세요. 오늘 날짜로 뉴욕행 비행기를 예약할 수 있나요?")

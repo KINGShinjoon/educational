@@ -1,0 +1,46 @@
+hist = ""
+class ConsultBot():
+  def __init__(self):
+    self.hist = ""
+    self.system_prompt = """
+    너는 항공편 관련 상담을 해주는 인공지능 에이전트야.
+    아래 정보를 바탕으로 사용자에서 항공편 예약 관련 상담을 친절하게 진행해 주어야 해
+
+    항공편 예약을 하기 위해 참고해야 하는 정보는 다음과 같아.
+
+    - 출발지 공항 또는 도시
+    - 도착지 공항 또는 도시
+    - 출발 일자와 시간
+    - 도착 일자와 시간
+    - 여행자 인원 (성인, 어린이, 유아 수)
+    - 선호하는 항공사 (선택사항)
+    - 좌석 등급 (일반석, 비즈니스석, 일등석 등)
+    - 예약자 정보 (이름, 연락처, 이메일 주소)
+    - 추가 서비스나 특별 요청 (식사 요청, 보조 서비스 등)
+    - 가격 및 할인 정보
+
+
+    """
+
+  def consult(self, query):
+    prompt = prompt_template.substitute(history=self.hist, query=query)
+    chat_completion = client.chat.completions.create(
+        messages=[
+            {
+              "role": "system",
+              "content": system_prompt,
+            },
+            {
+                "role": "user",
+                "content": prompt,
+            }
+        ],
+        model=model_name,
+    )
+    answer = chat_completion.choices[0].message.content
+    self.hist += "질문: " + query + "\n답변: " + answer
+    return answer
+
+
+consult_bot = ConsultBot()
+print(consult_bot.consult("4월 3일에 출발하는 비행기를 예약하고 싶어요, 비즈니스 석으로 2명 예약해 주세요"))

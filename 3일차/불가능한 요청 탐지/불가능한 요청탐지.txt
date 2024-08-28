@@ -1,0 +1,28 @@
+from openai import OpenAI
+client = OpenAI(base_url="http://localhost:5005/v1", api_key="lm-studio")
+
+query = ""
+
+
+system_prompt = Template("""
+너는 항공편 관련 상담을 해주는 인공지능 에이전트야.
+
+다음 사용자의 요청에 대해 친절하게 답변해줘
+
+질문: "$query"
+""")
+
+def consult(query):
+  prompt = system_prompt.substitute(query=query)
+  chat_completion = client.chat.completions.create(
+      messages=[
+          {
+              "role": "user",
+              "content": prompt,
+          }
+      ],
+      model=model_name,
+  )
+  return chat_completion.choices[0].message.content
+
+consult("안녕하세요. 오늘 날짜로 뉴욕행 비행기를 예약할 수 있나요?")
