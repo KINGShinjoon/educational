@@ -1,0 +1,41 @@
+from string import Template
+from openai import OpenAI
+
+client = OpenAI(base_url="http://localhost:5005/v1", api_key="lm-studio")
+
+path = '이용약관 및 규정.txt'
+query = "안녕하세요. 강의를 환불하고 싶어요. 어떻게 해야 하나요?"
+
+# 파일을 UTF-8 인코딩으로 읽기
+with open(path, "r", encoding="utf-8") as f:
+    fastcampos_policy = f.read()
+
+system_prompt = Template("""
+너는 온라인 강의에 대해 환불 및 결제를 담당해 주는 인공지능 챗봇이야.
+이용약관을 참고하여서 사용자의 질문에 친절하게 답변해줘.
+
+이용약관
+$terms
+""")
+
+prompt = Template("""
+다음 사용자의 요청에 대한 답변을 해줘
+
+요청: $query
+""")
+
+chat_completion = client.chat.completions.create(
+    messages=[
+        {
+            "role": "system",
+            "content": system_prompt.substitute(terms=fastcampos_policy),
+        },
+        {
+            "role": "user",
+            "content": prompt.substitute(query=query),
+        }
+    ],
+    model="heegyu/EEVE-Korean-Instruct-10.8B-v1.0-GGUF",
+)
+
+print(chat_completion.choices[0].message.content)
