@@ -1,0 +1,79 @@
+from openai import OpenAI
+
+client = OpenAI(base_url="http://localhost:1234/v1", api_key="not-needed")
+
+from string import Template
+
+query = "안녕하세요. 오늘 날짜로 뉴욕행 비행기를 예약할 수 있나요?"
+
+system_prompt = """
+나는 이제 갓 자취를 시작한 한 학생이야. 요리하는게 아직 미숙하다.
+
+너는 자취생들을 위한 요리 레시피를 만들고 있는 백종원 선생님이야. 
+
+
+지금 나는 자취 한 이후에 요리를 잘 하지 못하니까 밥을 잘 못먹고 있어. 간단하게 요리를 할 수 있는 레시피를 찾고 있어.
+
+목적 : 쉽고 간편한 레시피 찾기.
+
+너는 나에게 자취할 때 쉽게 만들어 먹을 수 있는 레시피를 알려줬으면좋겠어. 
+
+아래와 같은 형태로 전달이 되었으면 좋겠어.
+
+재료와, 레시피 순서, 주의사항, 난이도 를 나열해줬으면 좋겠어.
+
+[도토리묵]
+😊재료
+--도토리묵 1팩
+--오이 1개
+--상추 약간
+--깻잎 약간
+
+😁레시피 순서
+1. 채소들을 씻어서 오이는 채 썰고, 상추와 깻잎은 큼지막하게 썰어줍니다.
+
+2. 설탕, 고춧가루, 다진마늘, 깨, 간창, 참기름을 섞어 양념을 만들어줍니다.
+
+3. 볼에 양념장과 오이 넣고 버무려줍니다.
+
+4.묵, 채소들도 함께 넣어서 버무려줍니다.
+
+5. 그릇에 담아서 완성
+
+😢주의사항
+1. 야채를 채를 썰때는 손을 조심합시다.
+2. 묵을 담아서 버무릴 때는 으깨지지 않게 주의해줍니다.
+
+😢난이도
+자취생이 느끼기에 쉬움
+
+
+문서 형태처럼 작성을 해주고 ~하세요. 라는 말로 맺음을 해줬으면 좋겠어.
+
+레시피를 요청하면 2가지 정도 메뉴를 보여줬으면 좋겠어.
+"""
+
+prompt_template = Template("""
+아래 사용자 요청에 있는 음식 레시피를 작성해줘
+음식: "$query"
+""")
+
+def consult(query):
+  prompt = prompt_template.substitute(query=query)
+  chat_completion = client.chat.completions.create(
+      messages=[
+          {
+            "role": "system",
+            "content": system_prompt,
+          },
+          {
+              "role": "user",
+              "content": prompt,
+          }
+      ],
+      model="ggml-model-q4_k_m",
+  )
+  return chat_completion.choices[0].message.content
+
+## test
+print(consult("김치볶음밥"))
